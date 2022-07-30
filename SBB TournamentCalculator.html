@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Flexi Time Calculator</title>
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+<!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-gH2yIJqKdNHPEq0n4Mqa/HGKIhSkIHeL5AyhkYV8i59U5AR6csBvApHHNl/vI1Bx" crossorigin="anonymous"> -->
+
+<script type="text/javascript">
+var games = ["gameOne", "gameTwo", "gameThree", "gameFour", "gameFive", "gameSix", "gameSeven"]
+var target = 45;
+var points = {};
+var places = {};
+var placements = [];
+var results = [];
+var score = 0;
+var needed = 45;
+var averageNeeded = 1;
+var averagePosition = 1;
+
+function calculate() {
+    validateAll();
+    target = document.getElementById("target").value;
+    getPoints();
+
+    results = [];
+    placements = [];
+    score = 0;
+    var played = 0;
+    for (var i = 0; i < games.length; i++) {
+        if (document.getElementById(games[i]).value) {
+            placements.push(document.getElementById(games[i]).value);
+            results.push(points[document.getElementById(games[i]).value]);
+            score += parseInt(points[document.getElementById(games[i]).value]);
+            played += parseInt(1);
+        }
+    }
+    needed = parseInt(target - score);
+
+    var remaining = 7 - played;
+    averageNeeded = (needed / remaining).toFixed(2);
+
+    averagePosition = 1;
+    if(Math.ceil(averageNeeded) in places) {
+        averagePosition = places[Math.ceil(averageNeeded)];
+    } else {
+        for(var i in places) {
+            if(Math.ceil(averageNeeded) <= parseInt(i)) {
+                averagePosition = places[i];
+                break;
+            }
+        }
+    }
+    averagePosition += " or higher";
+
+    if(played == 7) {
+        if(score >= target) {
+            averageNeeded = "Qualified!";
+            averagePosition = "Qualified!";
+        } else {
+            averageNeeded = "Impossible!";
+            averagePosition = "Impossible!";
+        }
+    }
+
+    document.getElementById("results").innerText = placements;
+    document.getElementById("score").innerText = score;
+    document.getElementById("needed").innerText = needed;
+    document.getElementById("averageNeeded").innerText = averageNeeded;
+    document.getElementById("averagePosition").innerText = averagePosition;
+}
+
+function getPoints() {
+    points = {
+        "1": document.getElementById("first").value,
+        "2": document.getElementById("second").value,
+        "3": document.getElementById("third").value,
+        "4": document.getElementById("fourth").value,
+        "5": document.getElementById("fifth").value,
+        "6": document.getElementById("sixth").value,
+        "7": document.getElementById("seventh").value,
+        "8": document.getElementById("eighth").value
+    };
+    places = {};
+    for(var i in points) {
+        places[points[i]] = i;
+    }
+}
+
+
+function validateAll() {
+  document.getElementById("errors").innerHTML = "";
+  document.getElementById("error-panel").className = "row hidden";
+  document.getElementById("outputPanel").className = "panel panel-default";
+
+  var runningValidationResult = true;
+
+  var pointsPanel = ["target", "first", "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth"];
+
+  for(var i in games) {
+      if(document.getElementById(games[i]).value) {
+        runningValidationResult += validate(games[i], false);
+      }
+  }
+
+  for(var i in pointsPanel) {
+      runningValidationResult += validate(pointsPanel[i], true);
+  }
+
+  return runningValidationResult;
+
+//   runningValidationResult = true;
+//   if ("workingDay" != except) {
+//     runningValidationResult = validate("workingDay") && runningValidationResult;
+//   }
+//   if ("startTime" != except) {
+//     runningValidationResult = validate("startTime") && runningValidationResult;
+//   }
+//   if ("lunchDuration" != except) {
+//     runningValidationResult = validate("lunchDuration") && runningValidationResult;
+//   }
+//   if ("endTime" != except) {
+//     runningValidationResult = validate("endTime") && runningValidationResult;
+//   }
+//   if ("timeDiff" != except) {
+//     runningValidationResult = validate("timeDiff") && runningValidationResult;
+//   }
+//   return runningValidationResult;
+}
+
+function validate(fieldName, canBeZero) {
+  valid = false;
+  value = document.getElementById(fieldName).value;
+  fieldLabel = document.getElementById(fieldName + "Label").innerHTML;
+
+  var zeroCheck = canBeZero;
+  if(!canBeZero) {
+      zeroCheck = parseInt(value) > 0;
+  }
+
+  if (Number.isInteger(parseInt(value)) && zeroCheck) {
+    valid = true;
+  } else {
+    error = fieldLabel.substring(0, fieldLabel.length - 1) + " is not valid.<br/> ";
+    document.getElementById("errors").innerHTML = document.getElementById("errors").innerHTML + error;
+    document.getElementById("error-panel").className = "row show";
+    document.getElementById("outputPanel").className = "panel panel-default row hidden";
+  }
+  return valid;
+}
+</script>
+
+</head>
+<body style="background-color: silver">
+  <nav class="navbar navbar-inverse">
+    <div class="container-fluid">
+      <!-- Brand and toggle get grouped for better mobile display -->
+      <div class="navbar-header">
+        <h1 style="color: white">SBB Tournament Calculator</h1>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-md-6">
+        <div class="panel panel-default">
+          <div class="panel-body">
+            <p class="lead">Enter placement in each game.</p>
+            <form class="form-horizontal">
+              <div class="form-group">
+                <label id="gameOneLabel" for="gameOne" class="col-md-4 control-label">Game 1:</label>
+                <div class="col-md-3">
+                  <input type="number" class="form-control" id="gameOne" placeholder="1-8" size="2" maxLength="1" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label id="gameTwoLabel" for="gameTwo" class="col-md-4 control-label">Game 2:</label>
+                <div class="col-md-3">
+                  <input type="number" class="form-control" id="gameTwo" placeholder="1-8" size="2" maxLength="1" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label id="gameThreeLabel" for="gameThree" class="col-md-4 control-label">Game 3:</label>
+                <div class="col-md-3">
+                  <input type="number" class="form-control" id="gameThree" placeholder="1-8" size="2" maxLength="1" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label id="gameFourLabel" for="gameFour" class="col-md-4 control-label">Game 4:</label>
+                <div class="col-md-3">
+                  <input type="number" class="form-control" id="gameFour" placeholder="1-8" size="2" maxLength="1" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label id="gameFiveLabel" for="gameFive" class="col-md-4 control-label">Game 5:</label>
+                <div class="col-md-3">
+                  <input type="number" class="form-control" id="gameFive" placeholder="1-8"size="2" maxLength="1" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label id="gameSixLabel" for="gameSix" class="col-md-4 control-label">Game 6:</label>
+                <div class="col-md-3">
+                  <input type="number" class="form-control" id="gameSix" placeholder="1-8"size="2" maxLength="1" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label id="gameSevenLabel" for="gameSeven" class="col-md-4 control-label">Game 7:</label>
+                <div class="col-md-3">
+                  <input type="number" class="form-control" id="gameSeven" placeholder="1-8"size="2" maxLength="1" />
+                </div>
+              </div>
+              <div class="text-center">
+                <button type="button" class="btn btn-primary" onClick="calculate()">Calculate</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="panel panel-default">
+          <div class="panel-body">
+            <p class="lead">Enter points for each finishing position.</p>
+            <form class="form-horizontal">
+              <div class="form-group">
+                <label id="targetLabel" for="target" class="col-md-4 control-label">Target:</label>
+                <div class="col-md-3">
+                  <input type="number" class="form-control" id="target" placeholder="e.g. 45" value="45" size="4" maxLength="4" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label id="firstLabel" for="first" class="col-md-4 control-label">1st:</label>
+                <div class="col-md-3">
+                  <input type="number" class="form-control" id="first" placeholder="1-10" value="10" size="2" maxLength="2" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label id="secondLabel" for="second" class="col-md-4 control-label">2nd:</label>
+                <div class="col-md-3">
+                  <input type="number" class="form-control" id="second" placeholder="1-10" value="8" size="2" maxLength="2" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label id="thirdLabel" for="third" class="col-md-4 control-label">3rd:</label>
+                <div class="col-md-3">
+                  <input type="number" class="form-control" id="third" placeholder="1-10" value="7" size="2" maxLength="2" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label id="fourthLabel" for="fourth" class="col-md-4 control-label">4th:</label>
+                <div class="col-md-3">
+                  <input type="number" class="form-control" id="fourth" placeholder="1-10" value="6" size="2" maxLength="2" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label id="fifthLabel" for="fifth" class="col-md-4 control-label">5th:</label>
+                <div class="col-md-3">
+                  <input type="number" class="form-control" id="fifth" placeholder="1-10" value="4" size="2" maxLength="2" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label id="sixthLabel" for="sixth" class="col-md-4 control-label">6th:</label>
+                <div class="col-md-3">
+                  <input type="number" class="form-control" id="sixth" placeholder="1-10" value="3" size="2" maxLength="2" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label id="seventhLabel" for="seventh" class="col-md-4 control-label">7th:</label>
+                <div class="col-md-3">
+                  <input type="number" class="form-control" id="seventh" placeholder="1-10" value="2" size="2" maxLength="2" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label id="eighthLabel" for="eighth" class="col-md-4 control-label">8th:</label>
+                <div class="col-md-3">
+                  <input type="number" class="form-control" id="eighth" placeholder="1-10" value="1" size="2" maxLength="2" />
+                </div>
+              </div>
+              <div class="text-center">
+                <button type="button" class="btn btn-primary" onClick="calculate()">Calculate</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="panel panel-default" id="outputPanel">
+          <div class="panel-body">
+            <div class="col-md-1 text-right row-no-gutters" id="resultsLabel">
+              Results:
+            </div>
+            <div class="col-md-1 text-left row-no-gutters" id="results">
+              
+            </div>
+            <div class="col-md-1 text-right row-no-gutters" id="scoreLabel">
+              Score:
+            </div>
+            <div class="col-md-1 text-left row-no-gutters" id="score">
+              
+            </div>
+            <div class="col-md-1 text-right row-no-gutters" id="neededLabel">
+              Needed:
+            </div>
+            <div class="col-md-1 text-left row-no-gutters" id="needed">
+              
+            </div>
+            <div class="col-md-1 text-right row-no-gutters" id="averageNeededLabel">
+              Avg Result:
+            </div>
+            <div class="col-md-1 text-left row-no-gutters" id="averageNeeded">
+              
+            </div>
+            <div class="col-md-1 text-right row-no-gutters" id="averagePositionLabel">
+              Avg Position:
+            </div>
+            <div class="col-md-1 text-left row-no-gutters" id="averagePosition">
+            
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row"></div>
+      <div class="col-md-6">
+        <div id="error-panel" class="row hidden">
+          <div class="col-md-8">
+            <div class="panel panel-danger">
+              <div class="panel-heading">
+                Errors
+              </div>
+              <div id="errors" class="panel-body text-danger"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
