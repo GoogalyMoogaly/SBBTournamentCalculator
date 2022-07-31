@@ -66,7 +66,7 @@ function calculate() {
         }
     }
 
-    if(parseInt(averageNeeded) > parseInt(points["1"])) {
+    if(Math.ceil(averageNeeded) > parseInt(points["1"])) {
       averagePosition = "Impossible!";
     }
 
